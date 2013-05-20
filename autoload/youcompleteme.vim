@@ -37,22 +37,22 @@ function! youcompleteme#Enable()
     return
   endif
 
-  py import sys
-  py import vim
-  exe 'python sys.path.insert( 0, "' . s:script_folder_path . '/../python" )'
-  py from ycm import extra_conf_store
-  py extra_conf_store.CallExtraConfYcmCorePreloadIfExists()
-  py from ycm import base
+  py3 import sys
+  py3 import vim
+  exe 'python3 sys.path.insert( 0, "' . s:script_folder_path . '/../python" )'
+  py3 from ycm import extra_conf_store
+  py3 extra_conf_store.CallExtraConfYcmCorePreloadIfExists()
+  py3 from ycm import base
 
-  if !pyeval( 'base.CompatibleWithYcmCore()')
+  if !py3eval( 'base.CompatibleWithYcmCore()')
     echohl WarningMsg |
       \ echomsg "YouCompleteMe unavailable: ycm_core too old, PLEASE RECOMPILE ycm_core" |
       \ echohl None
     return
   endif
 
-  py from ycm.youcompleteme import YouCompleteMe
-  py ycm_state = YouCompleteMe()
+  py3 from ycm.youcompleteme import YouCompleteMe
+  py3 ycm_state = YouCompleteMe()
 
   augroup youcompleteme
     autocmd!
@@ -207,8 +207,8 @@ function! s:SetUpCompleteopt()
 endfunction
 
 function! s:OnVimLeave()
-  py ycm_state.OnVimLeave()
-  py extra_conf_store.CallExtraConfVimCloseIfExists()
+  py3 ycm_state.OnVimLeave()
+  py3 extra_conf_store.CallExtraConfVimCloseIfExists()
 endfunction
 
 
@@ -219,7 +219,7 @@ function! s:OnBufferVisit()
 
   call s:SetUpCompleteopt()
   call s:SetCompleteFunc()
-  py ycm_state.OnBufferVisit()
+  py3 ycm_state.OnBufferVisit()
   call s:OnFileReadyToParse()
 endfunction
 
@@ -229,7 +229,7 @@ function! s:OnBufferUnload( deleted_buffer_file )
     return
   endif
 
-  py ycm_state.OnBufferUnload( vim.eval( 'a:deleted_buffer_file' ) )
+  py3 ycm_state.OnBufferUnload( vim.eval( 'a:deleted_buffer_file' ) )
 endfunction
 
 
@@ -247,7 +247,7 @@ endfunction
 
 
 function! s:OnFileReadyToParse()
-  py ycm_state.OnFileReadyToParse()
+  py3 ycm_state.OnFileReadyToParse()
 endfunction
 
 
@@ -255,7 +255,7 @@ function! s:SetCompleteFunc()
   let &completefunc = 'youcompleteme#Complete'
   let &l:completefunc = 'youcompleteme#Complete'
 
-  if pyeval( 'ycm_state.NativeFiletypeCompletionUsable()' )
+  if py3eval( 'ycm_state.NativeFiletypeCompletionUsable()' )
     let &omnifunc = 'youcompleteme#OmniComplete'
     let &l:omnifunc = 'youcompleteme#OmniComplete'
 
@@ -311,7 +311,7 @@ function! s:OnInsertLeave()
 
   let s:omnifunc_mode = 0
   call s:UpdateDiagnosticNotifications()
-  py ycm_state.OnInsertLeave()
+  py3 ycm_state.OnInsertLeave()
   if g:ycm_autoclose_preview_window_after_completion ||
         \ g:ycm_autoclose_preview_window_after_insertion
     call s:ClosePreviewWindowIfNeeded()
@@ -380,8 +380,8 @@ endfunction
 
 function! s:UpdateDiagnosticNotifications()
   if get( g:, 'loaded_syntastic_plugin', 0 ) &&
-        \ pyeval( 'ycm_state.NativeFiletypeCompletionUsable()' ) &&
-        \ pyeval( 'ycm_state.DiagnosticsForCurrentFileReady()' ) &&
+        \ py3eval( 'ycm_state.NativeFiletypeCompletionUsable()' ) &&
+        \ py3eval( 'ycm_state.DiagnosticsForCurrentFileReady()' ) &&
         \ g:ycm_register_as_syntastic_checker
     SyntasticCheck
   endif
@@ -389,10 +389,10 @@ endfunction
 
 
 function! s:IdentifierFinishedOperations()
-  if !pyeval( 'base.CurrentIdentifierFinished()' )
+  if !py3eval( 'base.CurrentIdentifierFinished()' )
     return
   endif
-  py ycm_state.OnCurrentIdentifierFinished()
+  py3 ycm_state.OnCurrentIdentifierFinished()
   let s:omnifunc_mode = 0
 endfunction
 
@@ -430,7 +430,7 @@ endfunction
 
 
 function! s:OnBlankLine()
-  return pyeval( 'not vim.current.line or vim.current.line.isspace()' )
+  return py3eval( 'not vim.current.line or vim.current.line.isspace()' )
 endfunction
 
 
@@ -469,24 +469,24 @@ endfunction
 function! s:CompletionsForQuery( query, use_filetype_completer,
       \ completion_start_column )
   if a:use_filetype_completer
-    py completer = ycm_state.GetFiletypeCompleter()
+    py3 completer = ycm_state.GetFiletypeCompleter()
   else
-    py completer = ycm_state.GetGeneralCompleter()
+    py3 completer = ycm_state.GetGeneralCompleter()
   endif
 
-  py completer.CandidatesForQueryAsync( vim.eval( 'a:query' ),
+  py3 completer.CandidatesForQueryAsync( vim.eval( 'a:query' ),
         \ int( vim.eval( 'a:completion_start_column' ) ) )
 
   let l:results_ready = 0
   while !l:results_ready
-    let l:results_ready = pyeval( 'completer.AsyncCandidateRequestReady()' )
+    let l:results_ready = py3eval( 'completer.AsyncCandidateRequestReady()' )
     if complete_check()
       let s:searched_and_results_found = 0
       return { 'words' : [], 'refresh' : 'always'}
     endif
   endwhile
 
-  let l:results = pyeval( 'base.AdjustCandidateInsertionText( completer.CandidatesFromStoredRequest() )' )
+  let l:results = py3eval( 'base.AdjustCandidateInsertionText( completer.CandidatesFromStoredRequest() )' )
   let s:searched_and_results_found = len( l:results ) != 0
   return { 'words' : l:results, 'refresh' : 'always' }
 endfunction
@@ -514,13 +514,13 @@ function! youcompleteme#Complete( findstart, base )
 
 
     " TODO: make this a function-local variable instead of a script-local one
-    let s:completion_start_column = pyeval( 'base.CompletionStartColumn()' )
+    let s:completion_start_column = py3eval( 'base.CompletionStartColumn()' )
     let s:should_use_filetype_completion =
-          \ pyeval( 'ycm_state.ShouldUseFiletypeCompleter(' .
+          \ py3eval( 'ycm_state.ShouldUseFiletypeCompleter(' .
           \ s:completion_start_column . ')' )
 
     if !s:should_use_filetype_completion &&
-          \ !pyeval( 'ycm_state.ShouldUseGeneralCompleter(' .
+          \ !py3eval( 'ycm_state.ShouldUseGeneralCompleter(' .
           \ s:completion_start_column . ')' )
       " for vim, -2 means not found but don't trigger an error message
       " see :h complete-functions
@@ -537,7 +537,7 @@ endfunction
 function! youcompleteme#OmniComplete( findstart, base )
   if a:findstart
     let s:omnifunc_mode = 1
-    let s:completion_start_column = pyeval( 'base.CompletionStartColumn()' )
+    let s:completion_start_column = py3eval( 'base.CompletionStartColumn()' )
     return s:completion_start_column
   else
     return s:CompletionsForQuery( a:base, 1, s:completion_start_column )
@@ -546,7 +546,7 @@ endfunction
 
 
 function! s:ShowDetailedDiagnostic()
-  py ycm_state.ShowDetailedDiagnostic()
+  py3 ycm_state.ShowDetailedDiagnostic()
 endfunction
 
 command! YcmShowDetailedDiagnostic call s:ShowDetailedDiagnostic()
@@ -556,13 +556,13 @@ command! YcmShowDetailedDiagnostic call s:ShowDetailedDiagnostic()
 " required (currently that's on buffer save) OR when the SyntasticCheck command
 " is invoked
 function! youcompleteme#CurrentFileDiagnostics()
-  return pyeval( 'ycm_state.GetDiagnosticsForCurrentFile()' )
+  return py3eval( 'ycm_state.GetDiagnosticsForCurrentFile()' )
 endfunction
 
 
 function! s:DebugInfo()
   echom "Printing YouCompleteMe debug information..."
-  let debug_info = pyeval( 'ycm_state.DebugInfo()' )
+  let debug_info = py3eval( 'ycm_state.DebugInfo()' )
   for line in split( debug_info, "\n" )
     echom '-- ' . line
   endfor
@@ -582,16 +582,16 @@ function! s:CompleterCommand(...)
 
   if a:0 > 0 && strpart(a:1, 0, 3) == 'ft='
     if a:1 == 'ft=ycm:omni'
-      py completer = ycm_state.GetOmniCompleter()
+      py3 completer = ycm_state.GetOmniCompleter()
     elseif a:1 == 'ft=ycm:ident'
-      py completer = ycm_state.GetGeneralCompleter()
+      py3 completer = ycm_state.GetGeneralCompleter()
     else
-      py completer = ycm_state.GetFiletypeCompleterForFiletype(
+      py3 completer = ycm_state.GetFiletypeCompleterForFiletype(
                    \ vim.eval('a:1').lstrip('ft=') )
     endif
     let arguments = arguments[1:]
-  elseif pyeval( 'ycm_state.NativeFiletypeCompletionAvailable()' )
-    py completer = ycm_state.GetFiletypeCompleter()
+  elseif py3eval( 'ycm_state.NativeFiletypeCompletionAvailable()' )
+    py3 completer = ycm_state.GetFiletypeCompleter()
   else
     echohl WarningMsg |
       \ echomsg "No native completer found for current buffer." |
@@ -600,7 +600,7 @@ function! s:CompleterCommand(...)
     return
   endif
 
-  py completer.OnUserCommand( vim.eval( 'l:arguments' ) )
+  py3 completer.OnUserCommand( vim.eval( 'l:arguments' ) )
 endfunction
 
 
@@ -619,28 +619,28 @@ command! -nargs=* -complete=custom,youcompleteme#SubCommandsComplete
 
 
 function! youcompleteme#SubCommandsComplete( arglead, cmdline, cursorpos )
-  return join( pyeval( 'ycm_state.GetFiletypeCompleter().DefinedSubcommands()' ),
+  return join( py3eval( 'ycm_state.GetFiletypeCompleter().DefinedSubcommands()' ),
     \ "\n")
 endfunction
 
 
 function! s:ForceCompile()
-  if !pyeval( 'ycm_state.NativeFiletypeCompletionUsable()' )
+  if !py3eval( 'ycm_state.NativeFiletypeCompletionUsable()' )
     echom "Native filetype completion not supported for current file, "
           \ . "cannot force recompilation."
     return 0
   endif
 
   echom "Forcing compilation, this will block Vim until done."
-  py ycm_state.OnFileReadyToParse()
+  py3 ycm_state.OnFileReadyToParse()
   while 1
-    let diagnostics_ready = pyeval(
+    let diagnostics_ready = py3eval(
           \ 'ycm_state.DiagnosticsForCurrentFileReady()' )
     if diagnostics_ready
       break
     endif
 
-    let getting_completions = pyeval(
+    let getting_completions = py3eval(
           \ 'ycm_state.GettingCompletions()' )
 
     if !getting_completions
@@ -673,7 +673,7 @@ function! s:ShowDiagnostics()
     return
   endif
 
-  let diags = pyeval( 'ycm_state.GetDiagnosticsForCurrentFile()' )
+  let diags = py3eval( 'ycm_state.GetDiagnosticsForCurrentFile()' )
   if !empty( diags )
     call setloclist( 0, diags )
     lopen
